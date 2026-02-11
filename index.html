@@ -128,7 +128,7 @@
         async function initFaceDetection() {
             try {
                 // Usar CDN en lugar de archivos locales (más compatible)
-                const MODEL_URL = '/models';
+                const MODEL_URL = 'models/';
                 
                 await faceapi.loadSsdMobilenetv1Model(MODEL_URL);
                 await faceapi.loadFaceLandmarkModel(MODEL_URL);
