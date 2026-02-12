@@ -21,7 +21,7 @@ let modelsLoaded = false;
 let cameraActive = false;
 
 // Modelos a cargar
-const MODEL_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/models/';
+const MODEL_URL = 'models/';
 
 // Función para agregar entrada al log
 function addToLog(type, message, details = null) {
