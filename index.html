@@ -3,78 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Face Detect - Creación de Cuenta</title>
+    <title>Creación de Cuenta - Selfie</title>
     <link rel="stylesheet" href="css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 <body>
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-content">
-            <div class="spinner"></div>
-            <p id="loadingText">⏳ Cargando recursos...</p>
+    <!-- Pantalla de carga SIMPLE -->
+    <div class="loading" id="loading">
+        ⏳ Cargando modelos...
+    </div>
+
+    <div class="container">
+        <!-- HEADER - EXACTAMENTE como la imagen -->
+        <h1 class="title">Creación de Cuenta</h1>
+        <p class="subtitle">Complete los siguientes pasos para crear su cuenta y verificar su identidad</p>
+        
+        <p class="instruction">
+            Para completar el flujo de registro usted deve tomarse una selfie que constará como fe de vida.
+        </p>
+
+        <!-- BOTÓN ABRIR CÁMARA / CAPTURAR - EXACTAMENTE como la imagen -->
+        <button class="camera-btn" id="cameraBtn">📷 [Abrir camera]</button>
+
+        <!-- CONTENEDOR DE CÁMARA (oculto inicialmente) -->
+        <div id="cameraContainer" style="display: none;">
+            <div class="video-container">
+                <video id="video" autoplay playsinline muted></video>
+                <canvas id="canvas"></canvas>
+            </div>
+            
+            <!-- MENSAJE DE ESTADO DE ROSTRO -->
+            <div id="faceMessage" class="face-message"></div>
+        </div>
+
+        <!-- IMAGEN CAPTURADA - EXACTAMENTE como la imagen -->
+        <div class="captured-container">
+            <p>Imagen capturada</p>
+            <div class="captured-frame" id="capturedFrame">
+                <span id="capturedPlaceholder">⬤</span>
+                <img id="capturedImage" style="display: none;">
+            </div>
+        </div>
+
+        <!-- BOTONES ANTERIOR Y SIGUIENTE - EXACTAMENTE como la imagen -->
+        <div class="buttons">
+            <button class="btn anterior" id="prevBtn">Anterior</button>
+            <button class="btn siguiente" id="nextBtn" disabled>Siguiente</button>
         </div>
     </div>
 
-    <div class="main-container">
-        <div class="header">
-            <h1>Creación de Cuenta</h1>
-            <p class="subtitle">Complete los siguientes pasos para crear su cuenta y verificar su identidad</p>
+    <!-- LOG BIOMÉTRICO (oculto por defecto) -->
+    <div class="log-panel" id="logPanel" style="display: none;">
+        <div class="log-header">
+            <span>📋 DATOS BIOMÉTRICOS</span>
+            <button id="clearLogBtn" style="background: none; border: 1px solid red; color: red; padding: 2px 8px; border-radius: 4px;">Limpiar</button>
         </div>
-
-        <div class="content-card">
-            <p class="instruction">Para completar el flujo de registro usted debe tomarse una selfie que constará como fe de vida.</p>
-
-            <div class="camera-section">
-                <div class="camera-container">
-                    <div class="camera-frame">
-                        <video id="video" autoplay playsinline muted></video>
-                        <canvas id="canvas"></canvas>
-                        <div class="camera-placeholder" id="cameraPlaceholder">
-                            <span class="camera-icon">📷</span>
-                            <p>Cámara no iniciada</p>
-                        </div>
-                    </div>
-                    <div class="face-status" id="faceStatus">
-                        <span class="status-indicator"></span>
-                        <span id="statusMessage">Iniciando cámara...</span>
-                    </div>
-                </div>
-
-                <div class="capture-section">
-                    <button class="capture-btn" id="captureBtn" disabled>
-                        <span class="btn-icon">📸</span>
-                        Capturar Imagen
-                    </button>
-                    
-                    <div class="thumbnail-container">
-                        <p class="thumbnail-label">Imagen capturada:</p>
-                        <div class="thumbnail" id="thumbnail">
-                            <div class="thumbnail-placeholder">
-                                <span>⬤</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="action-buttons">
-                <button class="btn btn-secondary" id="prevBtn">Anterior</button>
-                <button class="btn btn-primary" id="nextBtn" disabled>Siguiente</button>
-            </div>
-        </div>
-
-        <div class="log-container" id="logContainer">
-            <div class="log-header">
-                <h3>📋 Log Biométrico</h3>
-                <button class="clear-log" id="clearLog">Limpiar</button>
-            </div>
-            <div class="log-entries" id="logEntries">
-                <div class="log-entry info">
-                    <span class="log-time">Sistema:</span>
-                    <span class="log-message">Esperando captura de imagen...</span>
-                </div>
-            </div>
-        </div>
+        <div id="logContent" class="log-content"></div>
     </div>
 
     <script src="js/script.js"></script>
