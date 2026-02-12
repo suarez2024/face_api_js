@@ -3,187 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Face Detect - Minimal</title>
+    <title>Face Detect - Creación de Cuenta</title>
+    <link rel="stylesheet" href="/css/styles.css">
     <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            font-family: system-ui, -apple-system, sans-serif;
-        }
-        
-        .container {
-            position: relative;
-            width: 100%;
-            max-width: 640px;
-            margin: 0 auto;
-        }
-        
-        video, canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: auto;
-            border-radius: 0;
-        }
-        
-        .status {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.8);
-            color: #0f0;
-            padding: 12px 20px;
-            border-radius: 30px;
-            text-align: center;
-            font-size: 16px;
-            border: 1px solid #0f0;
-            backdrop-filter: blur(5px);
-            z-index: 100;
-        }
-        
-        .loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: #000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-size: 18px;
-            z-index: 200;
-        }
-    </style>
 </head>
 <body>
-    <div class="loading" id="loading">
-        ⏳ Cargando modelos...
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <p id="loadingText">⏳ Cargando recursos...</p>
+        </div>
     </div>
 
-    <div class="container">
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="canvas"></canvas>
+    <div class="main-container">
+        <div class="header">
+            <h1>Creación de Cuenta</h1>
+            <p class="subtitle">Complete los siguientes pasos para crear su cuenta y verificar su identidad</p>
+        </div>
+
+        <div class="content-card">
+            <p class="instruction">Para completar el flujo de registro usted debe tomarse una selfie que constará como fe de vida.</p>
+
+            <div class="camera-section">
+                <div class="camera-container">
+                    <div class="camera-frame">
+                        <video id="video" autoplay playsinline muted></video>
+                        <canvas id="canvas"></canvas>
+                        <div class="camera-placeholder" id="cameraPlaceholder">
+                            <span class="camera-icon">📷</span>
+                            <p>Cámara no iniciada</p>
+                        </div>
+                    </div>
+                    <div class="face-status" id="faceStatus">
+                        <span class="status-indicator"></span>
+                        <span id="statusMessage">Iniciando cámara...</span>
+                    </div>
+                </div>
+
+                <div class="capture-section">
+                    <button class="capture-btn" id="captureBtn" disabled>
+                        <span class="btn-icon">📸</span>
+                        Capturar Imagen
+                    </button>
+                    
+                    <div class="thumbnail-container">
+                        <p class="thumbnail-label">Imagen capturada:</p>
+                        <div class="thumbnail" id="thumbnail">
+                            <div class="thumbnail-placeholder">
+                                <span>⬤</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-secondary" id="prevBtn">Anterior</button>
+                <button class="btn btn-primary" id="nextBtn" disabled>Siguiente</button>
+            </div>
+        </div>
+
+        <div class="log-container" id="logContainer">
+            <div class="log-header">
+                <h3>📋 Log Biométrico</h3>
+                <button class="clear-log" id="clearLog">Limpiar</button>
+            </div>
+            <div class="log-entries" id="logEntries">
+                <div class="log-entry info">
+                    <span class="log-time">Sistema:</span>
+                    <span class="log-message">Esperando captura de imagen...</span>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="status" id="status">
-        📱 Iniciando cámara...
-    </div>
-
-    <script>
-        // Configuración ultra simple
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const statusEl = document.getElementById('status');
-        const loadingEl = document.getElementById('loading');
-
-        // 1️⃣ PRIMERO: Iniciar cámara (compatible con todos los dispositivos)
-        async function initCamera() {
-            try {
-                const constraints = {
-                    video: {
-                        facingMode: 'environment', // 'user' para selfie, 'environment' para cámara trasera
-                        width: { ideal: 640 },
-                        height: { ideal: 480 }
-                    }
-                };
-                
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                video.srcObject = stream;
-                
-                statusEl.textContent = '✅ Cámara lista - Cargando IA...';
-                
-                await new Promise((resolve) => {
-                    video.onloadedmetadata = () => {
-                        canvas.width = video.videoWidth;
-                        canvas.height = video.videoHeight;
-                        resolve();
-                    };
-                });
-                
-                // Empezar detección
-                initFaceDetection();
-                
-            } catch (err) {
-                statusEl.textContent = '❌ Error: ' + err.message;
-                loadingEl.style.display = 'none';
-            }
-        }
-
-        // 2️⃣ DESPUÉS: Cargar modelos y empezar detección
-        async function initFaceDetection() {
-            try {
-                // Usar CDN en lugar de archivos locales (más compatible)
-                const MODEL_URL = 'models/';
-                
-                await faceapi.loadSsdMobilenetv1Model(MODEL_URL);
-                await faceapi.loadFaceLandmarkModel(MODEL_URL);
-                await faceapi.loadFaceExpressionModel(MODEL_URL);
-                
-                statusEl.textContent = '🤖 IA lista - Detectando rostros...';
-                loadingEl.style.display = 'none';
-                
-                detectFaces();
-                
-            } catch (err) {
-                statusEl.textContent = '❌ Error cargando IA: ' + err.message;
-                loadingEl.style.display = 'none';
-            }
-        }
-
-        // 3️⃣ DETECCIÓN CONTINUA (simple y eficiente)
-        async function detectFaces() {
-            if (!video.paused && video.readyState === 4) {
-                try {
-                    // Detectar rostros
-                    const detections = await faceapi.detectAllFaces(video)
-                        .withFaceLandmarks()
-                        .withFaceExpressions();
-                    
-                    // Limpiar canvas
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    // Dibujar resultados
-                    if (detections.length > 0) {
-                        const resized = faceapi.resizeResults(detections, {
-                            width: canvas.width,
-                            height: canvas.height
-                        });
-                        
-                        faceapi.draw.drawDetections(canvas, resized);
-                        faceapi.draw.drawFaceLandmarks(canvas, resized);
-                        faceapi.draw.drawFaceExpressions(canvas, resized, 0.05);
-                        
-                        statusEl.textContent = `👤 ${detections.length} rostro(s) detectado(s)`;
-                    } else {
-                        statusEl.textContent = '🔍 Buscando rostros...';
-                    }
-                    
-                } catch (e) {
-                    console.log('Error en detección:', e);
-                }
-            }
-            
-            // Continuar detectando (60fps = ~16ms)
-            requestAnimationFrame(detectFaces);
-        }
-
-        // ¡INICIAR TODO!
-        initCamera();
-    </script>
+    <script src="/js/script.js"></script>
 </body>
 </html>
